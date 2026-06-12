@@ -1,5 +1,11 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import (
+    CallbackQuery
+    Message
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+    WebAppInfo
+)
 from aiogram import F, Bot, Dispatcher
 from aiogram.filters import CommandStart
 from dotenv import load_dotenv
@@ -71,6 +77,26 @@ def build_page(songs, page=0, per_page=5):
 async def start(message: Message):
     await message.answer("🎵 Отправьте название песни или строку из песни.")
 
+@dp.message(Command("web"))
+async def web(message: Message):
+
+    kb = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="🎵 Open Web App",
+                    web_app=WebAppInfo(
+                        url="https://YOUR-RAILWAY.up.railway.app"
+                    )
+                )
+            ]
+        ]
+    )
+
+    await message.answer(
+        "Открыть Web App",
+        reply_markup=kb
+    )
 
 @dp.message()
 async def find_song(message: Message):
