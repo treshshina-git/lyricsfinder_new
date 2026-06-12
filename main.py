@@ -11,11 +11,12 @@ from genius import search_song
 from lrclib_api import get_lyrics
 from utils import split_text
 from aiogram.types import (
+    InlineKeyboardMarkup,
     InlineKeyboardButton,
     WebAppInfo
 )
 
-from aiogram.types import InlineKeyboardMarkup
+
 
 kb = InlineKeyboardMarkup(
     inline_keyboard=[
@@ -89,6 +90,10 @@ def build_page(songs, page=0, per_page=5):
 @dp.message(CommandStart())
 async def start(message: Message):
     await message.answer("🎵 Отправьте название песни или строку из песни.")
+    await message.answer(
+    "Открыть поиск",
+    reply_markup=kb
+    )
 
 
 @dp.message()
