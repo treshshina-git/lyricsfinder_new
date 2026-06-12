@@ -184,7 +184,10 @@ async def select_song(callback: CallbackQuery):
     for part in split_text(lyrics):
         await callback.message.answer(part)
 
-
+await message.answer(
+    "Открыть поиск",
+    reply_markup=kb
+)
 async def main():
     await dp.start_polling(bot)
 
