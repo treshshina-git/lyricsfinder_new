@@ -3,4 +3,4 @@ aiohttp==3.12.14
 python-dotenv==1.1.1
 fastapi
 uvicorn
-jinja2
+cachetools
