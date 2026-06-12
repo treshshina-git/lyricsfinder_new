@@ -29,10 +29,7 @@ kb = InlineKeyboardMarkup(
         ]
     ]
 )
-await message.answer(
-    "Открыть поиск",
-    reply_markup=kb
-)
+
 search_cache = {}
 
 load_dotenv()
@@ -42,12 +39,6 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 bot = Bot(BOT_TOKEN)
 dp = Dispatcher()
 
-
-
-await update.message.reply_text(
-    "Каталог",
-    reply_markup=keyboard
-)
 
 def build_page(songs, page=0, per_page=5):
     builder = InlineKeyboardBuilder()
