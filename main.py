@@ -1,4 +1,4 @@
-
+import IPython
 # Укажите путь к вашему файлу
 file_path = "/mnt/data/lyricsfinder_webapp_ready.zip"
 
