@@ -23,7 +23,7 @@ kb = InlineKeyboardMarkup(
             InlineKeyboardButton(
                 text="🎵 Открыть поиск",
                 web_app=WebAppInfo(
-                    url="https://YOUR-APP.up.railway.app"
+                    url="https://lyricsfindernew-production.up.railway.app"
                 )
             )
         ]
