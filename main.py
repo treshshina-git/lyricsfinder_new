@@ -10,7 +10,29 @@ import os
 from genius import search_song
 from lrclib_api import get_lyrics
 from utils import split_text
+from aiogram.types import (
+    InlineKeyboardButton,
+    WebAppInfo
+)
 
+from aiogram.types import InlineKeyboardMarkup
+
+kb = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(
+                text="🎵 Открыть поиск",
+                web_app=WebAppInfo(
+                    url="https://YOUR-APP.up.railway.app"
+                )
+            )
+        ]
+    ]
+)
+await message.answer(
+    "Открыть поиск",
+    reply_markup=kb
+)
 search_cache = {}
 
 load_dotenv()
@@ -20,6 +42,12 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 bot = Bot(BOT_TOKEN)
 dp = Dispatcher()
 
+
+
+await update.message.reply_text(
+    "Каталог",
+    reply_markup=keyboard
+)
 
 def build_page(songs, page=0, per_page=5):
     builder = InlineKeyboardBuilder()
