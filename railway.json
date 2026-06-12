@@ -9,7 +9,6 @@
     "numReplicas": 1,
     "sleepApplication": false,
     "useLegacyStacker": false,
-    "ipv6EgressEnabled": false,
     "multiRegionConfig": {
       "sfo": {
         "numReplicas": 1
