@@ -4,5 +4,3 @@ python-dotenv==1.1.1
 fastapi
 uvicorn
 cachetools
-jinja2
-python-multipart
