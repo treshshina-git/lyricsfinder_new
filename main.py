@@ -15,29 +15,88 @@ from aiogram.types import (
     WebAppInfo
 )
 
-
-
-kb = InlineKeyboardMarkup(
-    inline_keyboard=[
-        [
-            InlineKeyboardButton(
-                text="🎵 Открыть поиск",
-                web_app=WebAppInfo(
-                    url="https://lyricsfindernew-production.up.railway.app"
-                )
-            )
-        ]
-    ]
-)
-
-search_cache = {}
-
-load_dotenv()
+import telebot
+from telebot import types
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-
-bot = Bot(BOT_TOKEN)
+bot = telebot.TeleBot(BOT_TOKEN)
+search_cache = {}
+load_dotenv()
 dp = Dispatcher()
+
+
+@bot.message_handler(func=lambda message: True, content_types=['text'])
+def handle_user_query(message):
+    # Игнорируем команды вроде /start
+    if message.text.startswith('/'):
+        return
+        
+    query_text = message.text.strip()
+    
+    # Создаем клавиатуру с кнопкой переключения в инлайн
+    markup = types.InlineKeyboardMarkup()
+    switch_button = types.InlineKeyboardButton(
+        text=f"🔍 Показать результаты для '{query_text}'",
+        switch_inline_query=query_text  # Переводит в инлайн-режим с этим текстом
+    )
+    markup.add(switch_button)
+    
+    bot.send_message(
+        chat_id=message.chat.id,
+        text=f"Запрос «{query_text}» принят! Нажмите на кнопку ниже, чтобы открыть всплывающее окно с пагинацией.",
+        reply_markup=markup
+    )
+@bot.inline_handler(func=lambda query: True)
+def inline_pagination_handler(inline_query):
+    query_text = inline_query.query.strip()
+    
+    # Если поле ввода пустое, отправляем пустой список
+    if not query_text:
+        bot.answer_inline_query(
+            inline_query_id=inline_query.id, 
+            results=[], 
+            cache_time=1,
+            is_personal=True
+        )
+        return
+
+    # Получаем текущее смещение (offset) для пагинации
+    # В telebot это строка, поэтому безопасно переводим в int
+    offset = int(inline_query.offset) if inline_query.offset else 0
+
+    # Запрашиваем динамические данные
+    all_items = fetch_data_by_query(query_text)
+    
+    # Срез списка под текущую страницу (например, с 0 по 3, затем с 3 по 6 и т.д.)
+    start_index = offset
+    end_index = offset + ITEMS_PER_PAGE
+    page_items = all_items[start_index:end_index]
+
+    results = []
+    for item in page_items:
+        # Формируем элемент для всплывающего списка
+        article = types.InlineQueryResultArticle(
+            id=item["id"],
+            title=item["title"],
+            description=f"Цена: {item['price']}",
+            input_message_content=types.InputTextMessageContent(
+                message_text=f"Вы выбрали:\n*{item['title']}*\nСтоимость: {item['price']}",
+                parse_mode="Markdown"
+            )
+        )
+        results.append(article)
+
+    # Вычисляем offset для загрузки следующей страницы при скролле
+    next_offset = str(end_index) if end_index < len(all_items) else ""
+
+    # Отправляем результаты во всплывающее инлайн-окно
+    bot.answer_inline_query(
+        inline_query_id=inline_query.id,  # Указываем ID инлайн-запроса
+        results=results,                  # Список объектов InlineQueryResultArticle
+        next_offset=next_offset,          # Смещение для пагинации (авто-запрос при скролле)
+        cache_time=1,                     # Минимальное кэширование для тестов
+        is_personal=True                  # Ответ индивидуален для каждого юзера
+    )
 
 
 def build_page(songs, page=0, per_page=5):
@@ -127,24 +186,7 @@ async def noop(inline_query: InlineQuery):
     await inline_query.answer()
 
 
-@dp.inline_query(F.data.startswith("page_"))
-async def page_change(inline_query: InlineQuery):
 
-    page = int(inline_query.data.replace("page_", ""))
-
-    songs = search_cache.get(inline_query.from_user.id)
-
-    if not songs:
-        await inline_query.answer("Поиск устарел", show_alert=True)
-        return
-
-    builder = build_page(songs, page=page)
-
-    await inline_query.message.edit_reply_markup(
-        reply_markup=builder.as_markup()
-    )
-
-    await inline_query.answer()
 
 
 @dp.inline_query(F.data.startswith("song_"))
