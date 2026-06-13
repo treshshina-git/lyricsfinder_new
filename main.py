@@ -1,9 +1,8 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, InlineQuery, InlineQueryResultArticle, InputTextMessageContent
 from aiogram import F, Bot, Dispatcher
 from aiogram.filters import CommandStart
 from dotenv import load_dotenv
-
 import asyncio
 import os
 
@@ -123,40 +122,40 @@ async def find_song(message: Message):
     )
 
 
-@dp.callback_query(F.data == "noop")
-async def noop(callback: CallbackQuery):
-    await callback.answer()
+@dp.inline_query(F.data == "noop")
+async def noop(inline_query: InlineQuery):
+    await inline_query.answer()
 
 
-@dp.callback_query(F.data.startswith("page_"))
-async def page_change(callback: CallbackQuery):
+@dp.inline_query(F.data.startswith("page_"))
+async def page_change(inline_query: InlineQuery):
 
-    page = int(callback.data.replace("page_", ""))
+    page = int(inline_query.data.replace("page_", ""))
 
-    songs = search_cache.get(callback.from_user.id)
+    songs = search_cache.get(inline_query.from_user.id)
 
     if not songs:
-        await callback.answer("Поиск устарел", show_alert=True)
+        await inline_query.answer("Поиск устарел", show_alert=True)
         return
 
     builder = build_page(songs, page=page)
 
-    await callback.message.edit_reply_markup(
+    await inline_query.message.edit_reply_markup(
         reply_markup=builder.as_markup()
     )
 
-    await callback.answer()
+    await inline_query.answer()
 
 
-@dp.callback_query(F.data.startswith("song_"))
-async def select_song(callback: CallbackQuery):
+@dp.inline_query(F.data.startswith("song_"))
+async def select_song(inline_query: InlineQuery):
 
-    index = int(callback.data.replace("song_", ""))
+    index = int(inline_query.data.replace("song_", ""))
 
-    songs = search_cache.get(callback.from_user.id)
+    songs = search_cache.get(inline_query.from_user.id)
 
     if not songs:
-        await callback.answer("Поиск устарел", show_alert=True)
+        await inline_query.answer("Поиск устарел", show_alert=True)
         return
 
     song = songs[index]
@@ -165,29 +164,29 @@ async def select_song(callback: CallbackQuery):
     title = song["title"]
     url = song["url"]
 
-    await callback.answer()
+    await inline_query.answer()
 
-    await callback.message.answer(
+    await inline_query.message.answer(
         f"🔍 Получаю текст:\n{artist} - {title}"
     )
 
     lyrics = await get_lyrics(artist, title)
 
     if not lyrics:
-        await callback.message.answer(
+        await inline_query.message.answer(
             f"🎵 {artist} - {title}\n\n"
             f"Текст не найден в LRCLIB.\n\n"
             f"🔗 {url}"
         )
         return
 
-    await callback.message.answer(
+    await inline_query.message.answer(
         f"🎵 {artist} - {title}\n"
         f"👁 Просмотров на Genius: {song.get('views', 0):,}"
     )
 
     for part in split_text(lyrics):
-        await callback.message.answer(part)
+        await inline_query.message.answer(part)
 
 
 async def main():
