@@ -22,7 +22,7 @@ bot = Bot(BOT_TOKEN)
 dp = Dispatcher()
 
 # Настройка пагинации: сколько песен выводить за один раз во всплывающем окне
-ITEMS_PER_PAGE = 3
+ITEMS_PER_PAGE = 5
 
 
 @dp.message(CommandStart())
