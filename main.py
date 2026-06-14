@@ -1,5 +1,5 @@
 
-import html, asyncio, time
+import os, html, asyncio, time
 from dotenv import load_dotenv
 from telebot.async_telebot import AsyncTeleBot
 from telebot import types
@@ -7,7 +7,8 @@ from genius import search_song
 from lrclib_api import get_lyrics
 
 load_dotenv()
-bot = AsyncTeleBot("8802670423:AAG6aZBRd7VHYxgJpoB7oQi0NhuL1IJ8FjQ")
+TOKEN=os.getenv("BOT_TOKEN")
+bot = AsyncTeleBot(TOKEN)
 
 SEARCH_CACHE = {}
 LYRICS_CACHE = {}
