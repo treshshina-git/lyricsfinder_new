@@ -1,1 +1,1 @@
-{"deploy": {"restartPolicyType": "ON_FAILURE"}}
+{ "deploy": { "restartPolicyType": "ON_FAILURE" } }

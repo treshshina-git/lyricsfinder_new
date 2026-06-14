@@ -1,68 +1,59 @@
+import os
+import requests
+from telegram import Update, InlineQueryResultArticle, InputTextMessageContent
+from telegram.ext import Application, InlineQueryHandler, ContextTypes
 
-import os, sys, html, asyncio, time
-from dotenv import load_dotenv
-from telebot.async_telebot import AsyncTeleBot
-from telebot import types
-from genius import search_song
-from lrclib_api import get_lyrics
-import logging
+BOT_TOKEN = os.environ["BOT_TOKEN"]
+GENIUS_TOKEN = os.environ["GENIUS_TOKEN"]
 
-logging.basicConfig(level=logging.INFO)
+def search_genius(query: str):
+    url = "https://api.genius.com/search"
+    headers = {"Authorization": f"Bearer {GENIUS_TOKEN}"}
+    r = requests.get(url, headers=headers, params={"q": query}, timeout=15)
+    r.raise_for_status()
 
-load_dotenv()
-BOT_TOKEN=os.getenv("BOT_TOKEN")
-bot = AsyncTeleBot(BOT_TOKEN)
+    hits = r.json().get("response", {}).get("hits", [])
+    results = []
 
-SEARCH_CACHE = {}
-LYRICS_CACHE = {}
-TTL_SEARCH = 600
-TTL_LYRICS = 21600
+    for hit in hits[:10]:
+        song = hit["result"]
+        title = song.get("title", "Unknown")
+        artist = song.get("primary_artist", {}).get("name", "Unknown")
+        song_url = song.get("url", "")
 
-async def cached_search(q):
-    now=time.time()
-    if q in SEARCH_CACHE and now-SEARCH_CACHE[q][0] < TTL_SEARCH:
-        return SEARCH_CACHE[q][1]
-    data = await search_song(q)
-    SEARCH_CACHE[q]=(now,data)
-    return data
+        text = f"🎵 {title}\n👤 {artist}\n🔗 {song_url}"
 
-async def cached_lyrics(a,t):
-    key=f"{a}|{t}"
-    now=time.time()
-    if key in LYRICS_CACHE and now-LYRICS_CACHE[key][0] < TTL_LYRICS:
-        return LYRICS_CACHE[key][1]
-    lyr = await get_lyrics(a,t)
-    LYRICS_CACHE[key]=(now,lyr)
-    return lyr
+        results.append(
+            InlineQueryResultArticle(
+                id=str(song["id"]),
+                title=title,
+                description=artist,
+                input_message_content=InputTextMessageContent(text),
+            )
+        )
 
-@bot.inline_handler(func=lambda q: len(q.query.strip())>1)
-async def inline_query(query):
-    songs = await cached_search(query.query.strip())
-    tasks=[cached_lyrics(s['artist'],s['title']) for s in songs[:20]]
-    lyrics_list=await asyncio.gather(*tasks, return_exceptions=True)
+    return results
 
-    results=[]
-    for i,(song,lyrics) in enumerate(zip(songs[:20],lyrics_list)):
-        if isinstance(lyrics,Exception) or not lyrics:
-            lyrics="Текст не найден."
-        text=f"🎵 <b>{html.escape(song['artist'])} - {html.escape(song['title'])}</b>\n\n{html.escape(lyrics[:3900])}"
-        results.append(types.InlineQueryResultArticle(
-            id=str(i),
-            title=f"{song['artist']} - {song['title']}",
-            description="Отправить текст песни",
-            input_message_content=types.InputTextMessageContent(text, parse_mode="HTML")
-        ))
-    await bot.answer_inline_query(query.id, results, cache_time=30, is_personal=True)
+async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.inline_query.query.strip()
 
-async def main():
+    if not query:
+        return
 
-    await bot.remove_webhook()
-    me = await bot.get_me()
-    print(f"BOT: @{me.username}")
-    await bot.infinity_polling(
-        skip_pending=True,
-        timeout=30
-    )
+    try:
+        results = search_genius(query)
+        await update.inline_query.answer(
+            results=results,
+            cache_time=5,
+            is_personal=True
+        )
+    except Exception as e:
+        print("ERROR:", e)
+
+def main():
+    app = Application.builder().token(BOT_TOKEN).build()
+    app.add_handler(InlineQueryHandler(inline_query))
+    app.run_polling()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
