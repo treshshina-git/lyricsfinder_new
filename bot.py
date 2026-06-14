@@ -12,7 +12,7 @@ NEWS_SOURCES = {
     "Reuters": "https://www.reuters.com/world/",
     "DW": "https://www.dw.com/en/top-stories/s-9097"
 }
-
+print(NEWS_SOURCES)
 async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = (update.inline_query.query or "").strip()
     if not query:
