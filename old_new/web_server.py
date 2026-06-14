@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-TOKEN = "8802670423:AAG6aZBRd7VHYxgJpoB7oQi0NhuL1IJ8FjQ"
+TOKEN = "TOKEN"
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
