@@ -1,5 +1,5 @@
 
-import os
+#import os
 import asyncio
 from dotenv import load_dotenv
 import telebot
@@ -10,7 +10,7 @@ from lrclib_api import get_lyrics
 
 load_dotenv()
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+BOT_TOKEN = "8802670423:AAG6aZBRd7VHYxgJpoB7oQi0NhuL1IJ8FjQ"
 bot = telebot.TeleBot(BOT_TOKEN)
 
 INLINE_CACHE = {}
@@ -80,5 +80,8 @@ def chosen(result: ChosenInlineResult):
     for i in range(0, len(lyrics), chunk_size):
         bot.send_message(user_id, lyrics[i:i+chunk_size])
 
+
 if __name__ == "__main__":
     bot.infinity_polling(skip_pending=True)
+else:
+    pass
