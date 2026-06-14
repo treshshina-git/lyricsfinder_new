@@ -54,9 +54,15 @@ async def inline_query(query):
         ))
     await bot.answer_inline_query(query.id, results, cache_time=30, is_personal=True)
 
-if __name__ == "__main__":
-    asyncio.run(
-        bot.infinity_polling(
-            skip_pending=True
-        )
+async def main():
+
+    await bot.remove_webhook()
+
+    await bot.infinity_polling(
+        skip_pending=True,
+        timeout=30
     )
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
