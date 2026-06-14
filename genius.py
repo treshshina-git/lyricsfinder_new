@@ -1,8 +1,8 @@
 import aiohttp
-import os
+#import os
 import re
 
-GENIUS_TOKEN = os.getenv("GENIUS_TOKEN")
+GENIUS_TOKEN = "PDUOMPvqEEb7-dVEHR762tqKa1nf7goSxLXfRqtLkdkkG8ECtvNJ9DbEOvTKK-81"
 
 
 def normalize(text: str) -> str:
@@ -10,7 +10,7 @@ def normalize(text: str) -> str:
 
     # удаляем скобки
     text = re.sub(r"\(.*?\)", "", text)
-    text = re.sub(r"\[.*?\]", "", text)
+    text = re.sub(r"\[.*?]", "", text)
 
     # убираем лишние пробелы
     text = re.sub(r"\s+", " ", text)
@@ -121,9 +121,9 @@ async def search_song(query: str):
 
     # Сортировка по релевантности
     results.sort(
-        key=lambda song: (
-            song["score"],
-            song["views"]
+        key=lambda songs: (
+            songs["score"],
+            songs["views"]
         ),
         reverse=True
     )

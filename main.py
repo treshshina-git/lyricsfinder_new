@@ -60,7 +60,7 @@ def chosen(result: ChosenInlineResult):
     try:
         lyrics = asyncio.run(get_lyrics(song["artist"], song["title"]))
     except Exception:
-        lyrics = None
+        lyrics = ""
 
     header = (
         f"🎵 {song['artist']} - {song['title']}\n"
@@ -81,7 +81,7 @@ def chosen(result: ChosenInlineResult):
         bot.send_message(user_id, lyrics[i:i+chunk_size])
 
 
-if __name__ == "__main__":
-    bot.infinity_polling(skip_pending=True)
-else:
+if __name__ != "__main__":
     pass
+else:
+    bot.infinity_polling(timeout= 20, skip_pending=True)

@@ -1,10 +1,11 @@
 import asyncio
-import os
-from aiogram import Bot, Dispatcher, F
+
+# import os
+from aiogram import Bot, Dispatcher
 from aiogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-TOKEN = os.getenv("BOT_TOKEN")
+TOKEN = "8802670423:AAG6aZBRd7VHYxgJpoB7oQi0NhuL1IJ8FjQ"
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
