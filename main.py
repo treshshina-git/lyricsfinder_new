@@ -57,7 +57,8 @@ async def inline_query(query):
 async def main():
 
     await bot.remove_webhook()
-
+    me = await bot.get_me()
+    print(f"BOT: @{me.username}")
     await bot.infinity_polling(
         skip_pending=True,
         timeout=30
