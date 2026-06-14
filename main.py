@@ -55,12 +55,12 @@ async def inline_query(query):
 def main_loop():
     bot.infinity_polling()
     while 1:
-        time.sleep(3)
+        time.sleep(10)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         main_loop()
     except KeyboardInterrupt:
-        print('\nExiting by user request.\n')
+        print("\nExiting by user request.\n")
         sys.exit(0)
