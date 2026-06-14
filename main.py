@@ -4,7 +4,8 @@ import asyncio
 from dotenv import load_dotenv
 import telebot
 from telebot.types import InlineQueryResultArticle, InputTextMessageContent, ChosenInlineResult
-
+import time
+import sys
 from genius import search_song
 from lrclib_api import get_lyrics
 
@@ -19,7 +20,7 @@ INLINE_CACHE = {}
 def inline_search(query):
     try:
         songs = asyncio.run(search_song(query.query.strip()))
-    except Exception:
+    except Exception():
         songs = []
 
     results = []
@@ -59,7 +60,7 @@ def chosen(result: ChosenInlineResult):
 
     try:
         lyrics = asyncio.run(get_lyrics(song["artist"], song["title"]))
-    except Exception:
+    except Exception():
         lyrics = ""
 
     header = (
@@ -81,7 +82,21 @@ def chosen(result: ChosenInlineResult):
         bot.send_message(user_id, lyrics[i:i+chunk_size])
 
 
-if __name__ != "__main__":
-    pass
-else:
-    bot.infinity_polling(timeout= 20, skip_pending=True)
+def main_loop():
+    bot.infinity_polling(
+        timeout=500,
+        long_polling_timeout=1000,
+        skip_pending=False
+    )
+    while 1:
+        time.sleep(3)
+
+
+if __name__ == '__main__':
+    try:
+        main_loop()
+    except KeyboardInterrupt:
+        print('\nExiting by user request.\n')
+        sys.exit(0)
+
+
