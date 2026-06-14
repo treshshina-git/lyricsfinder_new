@@ -1,6 +1,8 @@
 
 #import os
 import asyncio
+from typing import Any
+
 from dotenv import load_dotenv
 import telebot
 from telebot.types import InlineQueryResultArticle, InputTextMessageContent, ChosenInlineResult
@@ -52,7 +54,7 @@ def inline_search(query):
 
 @bot.chosen_inline_handler(func=lambda r: True)
 def chosen(result: ChosenInlineResult):
-    song = INLINE_CACHE.get(result.result_id)
+    song: Any | None = INLINE_CACHE.get(result.result_id)
     if not song:
         return
 
