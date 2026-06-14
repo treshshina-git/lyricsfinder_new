@@ -1,137 +1,84 @@
-import asyncio
-import os
-from aiogram import Bot, Dispatcher, F
-from aiogram.filters import CommandStart
-from aiogram.types import (
-    Message, 
-    InlineQuery, 
-    InlineQueryResultArticle, 
-    InputTextMessageContent
-)
-from aiogram.utils.keyboard import InlineKeyboardBuilder
-from dotenv import load_dotenv
 
-# Предполагаем, что ваша функция поиска импортируется так же
+import os
+import asyncio
+from dotenv import load_dotenv
+import telebot
+from telebot.types import InlineQueryResultArticle, InputTextMessageContent, ChosenInlineResult
+
 from genius import search_song
+from lrclib_api import get_lyrics
 
 load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+bot = telebot.TeleBot(BOT_TOKEN)
 
-bot = Bot(BOT_TOKEN)
-dp = Dispatcher()
+INLINE_CACHE = {}
 
-# Настройка пагинации: сколько песен выводить за один раз во всплывающем окне
-ITEMS_PER_PAGE = 5
-
-
-@dp.message(CommandStart())
-async def start(message: Message):
-    await message.answer(
-        "Отправь фрагмент текста песни 🎵\nИли просто введи поисковый запрос!"
-    )
-
-
-# 1. ОБЫЧНЫЙ ЧАТ: Перенаправляем пользователя во всплывающее окно
-@dp.message()
-async def lyrics_search(message: Message):
-    query = message.text.strip()
-
-    # Создаем инлайн-кнопку, которая переключит юзера в инлайн-режим
-    builder = InlineKeyboardBuilder()
-    builder.button(
-        text=f"🔍 Найти результаты для '{query}'",
-        switch_inline_query=query  # Подставляет текст запроса во всплывающее окно
-    )
-
-    await message.answer(
-        text=f"Запрос принят! Нажмите кнопку ниже, чтобы открыть всплывающее окно результатов.",
-        reply_markup=builder.as_markup()
-    )
-
-
-# 2. ВСПЛЫВАЮЩЕЕ ОКНО: Обработка инлайн-запроса через bot.answer_inline_query
-@dp.inline_query()
-async def inline_lyrics_search(inline_query: InlineQuery):
-    query = inline_query.query.strip()
-
-    # Если пользователь ничего не ввел во всплывающем окне, отдаем пустой список
-    if not query:
-        await bot.answer_inline_query(
-            inline_query_id=inline_query.id,
-            results=[],
-            is_personal=True
-        )
-        return
-
-    # Получаем текущее смещение пагинации (offset) от Telegram
-    offset = int(inline_query.offset) if inline_query.offset else 0
-
-    # Вызываем вашу функцию поиска из Genius
-    # ВАЖНО: Ваша функция должна уметь возвращать список результатов, 
-    # либо адаптируйте этот кусок под вашу структуру данных.
-    search_results = await search_song(query)
-
-    # Если ничего не найдено
-    if not search_results:
-        await bot.answer_inline_query(
-            inline_query_id=inline_query.id,
-            results=[],
-            is_personal=True
-        )
-        return
-
-    # Если search_song возвращает один словарь (как в вашем примере), превращаем его в список.
-    # Если он уже возвращает список словарей — эту проверку можно убрать.
-    # if isinstance(search_results, dict):
-    #    all_items = [search_results]
-    #else:
-    all_items = search_results
-
-    # Пагинация: делаем срез списка под текущую страницу скролла
-    start_index = offset
-    end_index = offset + ITEMS_PER_PAGE
-    page_items = all_items[start_index:end_index]
+@bot.inline_handler(lambda q: bool(q.query.strip()))
+def inline_search(query):
+    try:
+        songs = asyncio.run(search_song(query.query.strip()))
+    except Exception:
+        songs = []
 
     results = []
-    for item in page_items:
-        # Извлекаем данные, которые приходят из вашего модуля genius
-        artist = item.get('artist', 'Неизвестный исполнитель')
-        title = item.get('title', 'Без названия')
-        url = item.get('url', '')
-        # Опционально: если Genius отдает обложку трека, можно вытащить её url
-        thumbnail = item.get('thumbnail_url', None) 
+
+    for idx, song in enumerate(songs[:50]):
+        result_id = f"{query.from_user.id}:{idx}"
+        INLINE_CACHE[result_id] = song
+
+        views = song.get("views", 0)
+
+        text = (
+            f"🎵 <b>{song['artist']} - {song['title']}</b>\n"
+            f"Нажмите на результат. Полный текст будет отправлен ботом в ЛС."
+        )
 
         results.append(
             InlineQueryResultArticle(
-                id=f"song_{item.get('id', start_index)}",  # Уникальный ID для Telegram
-                title=f"🎵 {artist} - {title}",
-                description="Нажмите, чтобы отправить трек в чат",
-                thumbnail_url=thumbnail, # Будет отображаться иконка трека (если есть)
+                id=result_id,
+                title=f"{song['artist']} - {song['title']}",
+                description=f"👁 {views:,}",
                 input_message_content=InputTextMessageContent(
-                    message_text=f"🎵 **{artist} — {title}**\n\n Ссылка на Genius: {url}",
-                    parse_mode="Markdown"
+                    message_text=text,
+                    parse_mode="HTML"
                 )
             )
         )
 
-    # Вычисляем смещение для следующей страницы при скролле вниз
-    next_offset = str(end_index) if end_index < len(all_items) else ""
+    bot.answer_inline_query(query.id, results, cache_time=10)
 
-    # КЛЮЧЕВОЙ МЕТОД: Отвечаем во всплывающее окно через bot
-    await bot.answer_inline_query(
-        inline_query_id=inline_query.id,  # Связываем ответ с запросом юзера
-        results=results,                  # Список сформированных статей треков
-        next_offset=next_offset,          # Передаем offset для пагинации
-        cache_time=1,                     # Минимальный кэш для удобного тестирования
-        is_personal=True
+@bot.chosen_inline_handler(func=lambda r: True)
+def chosen(result: ChosenInlineResult):
+    song = INLINE_CACHE.get(result.result_id)
+    if not song:
+        return
+
+    user_id = result.from_user.id
+
+    try:
+        lyrics = asyncio.run(get_lyrics(song["artist"], song["title"]))
+    except Exception:
+        lyrics = None
+
+    header = (
+        f"🎵 {song['artist']} - {song['title']}\n"
+        f"👁 Просмотров: {song.get('views',0):,}\n\n"
     )
 
+    if not lyrics:
+        bot.send_message(
+            user_id,
+            header + f"Текст не найден.\n{song['url']}"
+        )
+        return
 
-async def main():
-    await dp.start_polling(bot)
+    chunk_size = 3500
+    bot.send_message(user_id, header)
 
+    for i in range(0, len(lyrics), chunk_size):
+        bot.send_message(user_id, lyrics[i:i+chunk_size])
 
 if __name__ == "__main__":
-    asyncio.run(main())
-    
+    bot.infinity_polling(skip_pending=True)
