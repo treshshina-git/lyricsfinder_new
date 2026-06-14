@@ -5,6 +5,9 @@ from telebot.async_telebot import AsyncTeleBot
 from telebot import types
 from genius import search_song
 from lrclib_api import get_lyrics
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 load_dotenv()
 BOT_TOKEN=os.getenv("BOT_TOKEN")
@@ -51,10 +54,12 @@ async def inline_query(query):
         ))
     await bot.answer_inline_query(query.id, results, cache_time=30, is_personal=True)
 
+async def main():
+    await bot.infinity_polling(
+        timeout=30,
+        long_polling_timeout=30,
+        skip_pending=True
+    )
 
 if __name__ == "__main__":
-    asyncio.run(
-        bot.infinity_polling(
-            skip_pending=True
-        )
-    )
+    asyncio.run(main())
