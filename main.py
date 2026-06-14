@@ -1,5 +1,5 @@
 
-import os, html, asyncio, time
+import os, sys, html, asyncio, time
 from dotenv import load_dotenv
 from telebot.async_telebot import AsyncTeleBot
 from telebot import types
@@ -7,8 +7,8 @@ from genius import search_song
 from lrclib_api import get_lyrics
 
 load_dotenv()
-TOKEN=os.getenv("BOT_TOKEN")
-bot = AsyncTeleBot(TOKEN)
+BOT_TOKEN=os.getenv("BOT_TOKEN")
+bot = AsyncTeleBot(BOT_TOKEN)
 
 SEARCH_CACHE = {}
 LYRICS_CACHE = {}
@@ -51,8 +51,16 @@ async def inline_query(query):
         ))
     await bot.answer_inline_query(query.id, results, cache_time=30, is_personal=True)
 
-async def main():
-    await bot.infinity_polling(skip_pending=True)
 
-if __name__ == "__main__":
-    asyncio.run(main())
+def main_loop():
+    bot.infinity_polling()
+    while 1:
+        time.sleep(3)
+
+
+if __name__ == '__main__':
+    try:
+        main_loop()
+    except KeyboardInterrupt:
+        print('\nExiting by user request.\n')
+        sys.exit(0)
