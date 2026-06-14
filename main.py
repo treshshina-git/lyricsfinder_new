@@ -83,10 +83,10 @@ async def inline_lyrics_search(inline_query: InlineQuery):
 
     # Если search_song возвращает один словарь (как в вашем примере), превращаем его в список.
     # Если он уже возвращает список словарей — эту проверку можно убрать.
-    if isinstance(search_results, dict):
-        all_items = [search_results]
-    else:
-        all_items = search_results
+    # if isinstance(search_results, dict):
+    #    all_items = [search_results]
+    #else:
+    all_items = search_results
 
     # Пагинация: делаем срез списка под текущую страницу скролла
     start_index = offset
