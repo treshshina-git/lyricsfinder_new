@@ -1,4 +1,3 @@
-aiogram==3.21.0
-aiohttp==3.12.14
-python-dotenv==1.1.1
-pyTelegramBotAPI==4.34.0
+pyTelegramBotAPI
+aiohttp
+python-dotenv
