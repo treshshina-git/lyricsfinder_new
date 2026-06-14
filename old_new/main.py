@@ -10,7 +10,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 load_dotenv()
-BOT_TOKEN=os.getenv("8802670423:AAG6aZBRd7VHYxgJpoB7oQi0NhuL1IJ8FjQ")
+BOT_TOKEN=os.getenv("BOT_TOKEN")
 bot = AsyncTeleBot(BOT_TOKEN)
 
 SEARCH_CACHE = {}
