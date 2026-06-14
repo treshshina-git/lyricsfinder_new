@@ -17,7 +17,7 @@ SEARCH_CACHE = {}
 LYRICS_CACHE = {}
 TTL_SEARCH = 600
 TTL_LYRICS = 21600
-print(TTL_LYRICS)
+
 async def cached_search(q):
     now=time.time()
     if q in SEARCH_CACHE and now-SEARCH_CACHE[q][0] < TTL_SEARCH:
@@ -65,5 +65,4 @@ async def main():
     )
 
 if __name__ == "__main__":
-    import asyncio
     asyncio.run(main())
