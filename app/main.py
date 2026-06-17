@@ -7,11 +7,11 @@ from app.config import (
     WEBHOOK_SECRET,
     validate_config,
 )
-
+print("Initializing FastAPI application and Telegram bot...")
 app = FastAPI()
 tg_app = setup_app()
 
-
+print("Starting the bot and setting up the webhook...")
 @app.on_event("startup")
 async def startup():
     validate_config()
@@ -21,7 +21,7 @@ async def startup():
         secret_token=WEBHOOK_SECRET,
     )
 
-
+print("Bot is running and webhook is set up.")
 @app.post("/webhook")
 async def webhook(request: Request):
     data = await request.json()
@@ -29,7 +29,7 @@ async def webhook(request: Request):
     await tg_app.process_update(update)
     return {"ok": True}
 
-
+print("Webhook endpoint is ready to receive updates.")
 @app.get("/health")
 def health():
     return {"status": "ok"}
