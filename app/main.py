@@ -25,9 +25,20 @@ print("Bot is running and webhook is set up.")
 @app.post("/webhook")
 async def webhook(request: Request):
     data = await request.json()
-    update = Update.de_json(data, tg_app.bot)
+    try:
+        update = Update.de_json(data, tg_app.bot)
+        # Debug: show which update types Telegram sends (important for inline queries)
+        update_dict = update.to_dict()
+        print("[webhook] incoming update keys:", list(update_dict.keys()))
+        print("[webhook] incoming update:", update_dict)
+    except Exception as e:
+        print("[webhook] failed to parse update:", repr(e))
+        print("[webhook] raw data:", data)
+        raise
+
     await tg_app.process_update(update)
     return {"ok": True}
+
 
 print("Webhook endpoint is ready to receive updates.")
 @app.get("/health")
