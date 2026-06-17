@@ -225,6 +225,7 @@ async def inline_menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    print("Handling /start command...")
     query = f"{MENU_PREFIX}:sections:0"
     keyboard = InlineKeyboardMarkup(
         [
@@ -244,6 +245,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 def setup_app():
+    print("Setting up the Telegram bot application...")
     app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(InlineQueryHandler(inline_menu_handler))
