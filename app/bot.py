@@ -11,7 +11,7 @@ from app.vk_api import get_online_sections, get_online_streams
 
 
 MENU_PREFIX = "menu"
-
+print("Bot module loaded. Ready to set up handlers and build the menu.")
 
 def _parse_query(q: str) -> dict:
     parts = (q or "").strip().split(":")

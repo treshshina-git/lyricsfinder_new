@@ -5,8 +5,7 @@ from app.config import VK_CLIENT_ID, VK_CLIENT_SECRET, TOKEN_VK_URL
 
 _cached_token = None
 _expire_at = 0
-
-
+print("Token manager initialized. Ready to fetch access tokens when needed.")
 def get_access_token():
     global _cached_token, _expire_at
     now = int(time.time())
@@ -15,7 +14,7 @@ def get_access_token():
 
     credentials = f"{VK_CLIENT_ID}:{VK_CLIENT_SECRET}"
     encoded = base64.b64encode(credentials.encode()).decode()
-
+    print("Fetching new access token from VK API...")   
     r = requests.post(
         TOKEN_VK_URL,
         headers={
