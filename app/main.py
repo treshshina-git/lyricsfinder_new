@@ -34,3 +34,4 @@ print("Webhook endpoint is ready to receive updates.")
 def health():
     return {"status": "ok"}
 
+print("Health check endpoint is ready.")
