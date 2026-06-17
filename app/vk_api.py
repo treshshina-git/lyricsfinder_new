@@ -1,10 +1,12 @@
 import requests
 from app.token_manager import get_access_token
-from app.config import CHAT_RULETTE_CATEGORY_ID, API_URL_STREAMS, API_URL_SECTIONS
+from app.config import API_URL_STREAMS, API_URL_SECTIONS
 print("VK API module loaded and ready to fetch data.")
 
 def get_online_streams(section_id=None):
     token = get_access_token()
+    if API_URL_STREAMS is None:
+        raise RuntimeError("API_URL_STREAMS is not configured")
     r = requests.get(
         API_URL_STREAMS,
         headers={"Authorization": f"Bearer {token}"},
@@ -39,6 +41,8 @@ def get_online_streams(section_id=None):
 print("Fetching online streams from VK API...") 
 def get_online_sections():
     token = get_access_token()
+    if API_URL_SECTIONS is None:
+        raise RuntimeError("API_URL_SECTIONS is not configured")
     r = requests.get(
         API_URL_SECTIONS,
         headers={"Authorization": f"Bearer {token}"},

@@ -15,7 +15,9 @@ def get_access_token():
     print("No valid cached token found. Fetching new token...")
     credentials = f"{VK_CLIENT_ID}:{VK_CLIENT_SECRET}"
     encoded = base64.b64encode(credentials.encode()).decode()
-    print("Fetching new access token from VK API...")   
+    print("Fetching new access token from VK API...")
+    if TOKEN_VK_URL is None:
+        raise RuntimeError("TOKEN_VK_URL is not configured")
     r = requests.post(
         TOKEN_VK_URL,
         headers={
