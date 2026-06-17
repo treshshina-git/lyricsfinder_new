@@ -16,10 +16,12 @@ print("Starting the bot and setting up the webhook...")
 async def startup():
     validate_config()
     await tg_app.initialize()
+    print("[startup] Setting webhook url:", WEBHOOK_URL)
     await tg_app.bot.set_webhook(
-        url=WEBHOOK_URL,
+        url=str(WEBHOOK_URL),
         secret_token=WEBHOOK_SECRET,
     )
+
 
 print("Bot is running and webhook is set up.")
 @app.post("/webhook")
