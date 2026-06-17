@@ -1,7 +1,7 @@
 import requests
 from app.token_manager import get_access_token
 from app.config import CHAT_RULETTE_CATEGORY_ID, API_URL_STREAMS, API_URL_SECTIONS
-
+print("VK API module loaded and ready to fetch data.")
 
 def get_online_streams(section_id=None):
     token = get_access_token()
@@ -36,7 +36,7 @@ def get_online_streams(section_id=None):
         )
     return streams
 
-
+print("Fetching online streams from VK API...") 
 def get_online_sections():
     token = get_access_token()
     r = requests.get(
@@ -62,4 +62,4 @@ def get_online_sections():
             }
         )
     return sections
-
+print("Online sections fetched successfully.")
