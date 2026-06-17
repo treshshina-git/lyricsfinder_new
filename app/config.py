@@ -29,3 +29,4 @@ def validate_config():
             f"Missing env vars: {', '.join(missing)}"
         )
 
+print("Configuration validation completed. All required environment variables are set.")
